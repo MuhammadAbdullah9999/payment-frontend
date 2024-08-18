@@ -22,7 +22,7 @@ function App() {
 
   const handleCheckout = async () => {
     try {
-        const response = await fetch('http://localhost:5000/checkout', {
+        const response = await fetch('https://payment-backend-uzml.onrender.com/checkout', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -66,7 +66,7 @@ function App() {
                 fundingSource={FUNDING.PAYPAL} // Specify PayPal as the only funding source
                 createOrder={async () => {
                   try {
-                    const response = await fetch("http://localhost:5000/api/orders", {
+                    const response = await fetch("https://payment-backend-uzml.onrender.com/api/orders", {
                       method: "POST",
                       headers: {
                         "Content-Type": "application/json",
@@ -103,7 +103,7 @@ function App() {
                 onApprove={async (data, actions) => {
                   try {
                     const response = await fetch(
-                      `http://localhost:5000/api/orders/${data.orderID}/capture`,
+                      `https://payment-backend-uzml.onrender.com/api/orders/${data.orderID}/capture`,
                       {
                         method: "POST",
                         headers: {
