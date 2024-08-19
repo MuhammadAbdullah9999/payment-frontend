@@ -2,8 +2,7 @@ import React, { useState } from "react";
 import { PayPalScriptProvider, PayPalButtons, FUNDING } from "@paypal/react-paypal-js";
 import './App.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faWallet } from '@fortawesome/free-solid-svg-icons';
-
+import { faWallet, faSpinner } from '@fortawesome/free-solid-svg-icons';
 
 function Message({ content }) {
   return <p className="text-center text-red-500">{content}</p>;
@@ -17,6 +16,7 @@ function App() {
   };
 
   const [message, setMessage] = useState("");
+  const [loading, setLoading] = useState(false); // Loading state
 
   const cartItems = [
     { name: "PMI PMP Course", price: 20.00 },
@@ -24,6 +24,7 @@ function App() {
   ];
 
   const handleCheckout = async () => {
+    setLoading(true); // Start loading
     try {
         const response = await fetch('https://payment-backend-uzml.onrender.com/checkout', {
             method: 'POST',
@@ -36,14 +37,15 @@ function App() {
         window.location.href = data.url;
     } catch (error) {
         console.error('Error:', error);
+    } finally {
+        setLoading(false); // Stop loading
     }
-};
-
+  };
 
   return (
     <div className="min-h-screen bg-gray-100 flex justify-center items-center">
       <div className="container mx-auto p-4">
-        <div className="bg-white w-1/2 m-auto shadow-md rounded-lg p-6 flex flex-col  gap-6">
+        <div className="bg-white w-1/2 m-auto shadow-md rounded-lg p-6 flex flex-col gap-6">
           <div className="flex-1">
             <h1 className="text-2xl font-bold mb-4">Shopping Cart</h1>
 
@@ -53,7 +55,6 @@ function App() {
                 <p className="text-gray-700">Price: ${item.price.toFixed(2)}</p>
               </div>
             ))}
-
           </div>
 
           <div className="flex-1">
@@ -69,6 +70,7 @@ function App() {
                 fundingSource={FUNDING.PAYPAL} // Specify PayPal as the only funding source
                 createOrder={async () => {
                   try {
+                    setLoading(true); // Start loading
                     const response = await fetch("https://payment-backend-uzml.onrender.com/api/orders", {
                       method: "POST",
                       headers: {
@@ -87,6 +89,7 @@ function App() {
                     });
 
                     const orderData = await response.json();
+                    setLoading(false); // Stop loading
 
                     if (orderData.id) {
                       return orderData.id;
@@ -101,6 +104,7 @@ function App() {
                   } catch (error) {
                     console.error(error);
                     setMessage(`Could not initiate PayPal Checkout...${error}`);
+                    setLoading(false); // Stop loading
                   }
                 }}
                 onApprove={async (data, actions) => {
@@ -146,16 +150,21 @@ function App() {
                 }}
               />
             </PayPalScriptProvider>
-           
-            <div className="text-center"> 
-  <button
-    onClick={handleCheckout}
-    className="mt-4 bg-blue-500 text-white px-4 py-2 w-full text rounded hover:bg-blue-600 flex items-center justify-center"
-  >
-    <FontAwesomeIcon icon={faWallet} className="mr-2" />
-    Use cards and other
-  </button>
-</div>
+
+            <div className="text-center">
+              <button
+                onClick={handleCheckout}
+                className="mt-4 bg-blue-500 text-white px-4 py-2 w-full rounded hover:bg-blue-600 flex items-center justify-center"
+                disabled={loading} // Disable button during loading
+              >
+                {loading ? (
+                  <FontAwesomeIcon icon={faSpinner} spin className="mr-2" />
+                ) : (
+                  <FontAwesomeIcon icon={faWallet} className="mr-2" />
+                )}
+                {loading ? "Processing..." : "Use cards and other"}
+              </button>
+            </div>
 
             <Message content={message} />
           </div>
